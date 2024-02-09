@@ -4,7 +4,7 @@ type Tema = 'dark' | ''
 
 interface AppContextProps {
     tema?: Tema
-    children?: any
+    children?: any //para resolver aviso
     alterarTema?: () => void
 }
 
@@ -32,6 +32,6 @@ export function AppProvider(props: AppContextProps) {
 export default AppContext
 
 
-export const AppConsumer = AppContext.Consumer
+//export const AppConsumer = AppContext.Consumer
 
 //duas figuras relacionadas ao contexto, consumer e provider
