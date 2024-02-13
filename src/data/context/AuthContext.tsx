@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react'
-import firebase from '../../firebase/config'
+import firebase from '../../firebase/config.js'
 import Usuario from '@/src/model/Usuario' 
 import { useRouter } from 'next/router'
 
