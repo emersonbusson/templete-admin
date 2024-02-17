@@ -4,9 +4,21 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['source.unsplash.com'],
-  },
-  
-};
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  }
+}
 
 export default nextConfig;

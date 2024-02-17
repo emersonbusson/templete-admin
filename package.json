@@ -2,7 +2,6 @@
   "name": "templete-admin",
   "version": "0.1.0",
   "private": true,
-  
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,6 +10,8 @@
   },
   "dependencies": {
     "firebase": "^8.8.0",
+    "i": "^0.3.7",
+    "js-cookie": "^3.0.5",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18"

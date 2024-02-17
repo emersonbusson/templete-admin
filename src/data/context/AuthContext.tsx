@@ -1,7 +1,11 @@
-import { createContext, useState } from 'react'
+
+import { createContext, useEffect, useState } from 'react'
 import firebase from '../../firebase/config.js'
 import Usuario from '@/src/model/Usuario' 
 import { useRouter } from 'next/router'
+import Cookies from 'js-cookie'
+
+
 
 interface AuthContextProps{
     usuario?: Usuario
@@ -13,7 +17,7 @@ const AuthContext = createContext<AuthContextProps>({})
 
 
 
-async function usuarioNormalizado(usuarioFirebase: firebase.User): Promise<Usuario>{
+async function usuarioNormalizado(usuarioFirebase: any): Promise<Usuario>{
     const token =  await usuarioFirebase.getIdToken()
     return {
         uid: usuarioFirebase.uid,
@@ -23,23 +27,71 @@ async function usuarioNormalizado(usuarioFirebase: firebase.User): Promise<Usuar
         provedor: usuarioFirebase.providerData[0]?.providerId,
         imagemUrl: usuarioFirebase.photoURL
 
-    }}
+    }
+}
+
+    function gerenciarCookie(logado: boolean){
+        if(logado){
+            Cookies.set('templete-admin-cod3r-auth', logado, {
+                expires: 7
+            } )
+        }else{
+            Cookies.delete('templete-admin-cod3r-auth')
+        }
+    } 
 
 
 export function AuthProvider(props: AuthContextProps){
     const router = useRouter()
     const [usuario, setUsuario] = useState<Usuario>({} as Usuario);
+    const [carregando, setCarregando] = useState<Boolean>(true);
+    
+    async function ConfigurarSessao(usuarioFirebase: any){
+        if(usuarioFirebase?.email !== null){
+            const usuario = await usuarioNormalizado(usuarioFirebase)
+            setUsuario(usuario)
+            gerenciarCookie(true) //add o cookie
+            setCarregando(false)
+            return usuario.email
+        }else{
+            setUsuario({})
+            gerenciarCookie(false) //deleta o cookie
+            setCarregando(false)
+            return false
+        }   
+    }
 
     async function loginGoogle() {
-        const resp = await firebase.auth().signInWithPopup(
+        try{
+            setCarregando(true)
+            
+            const resp = await firebase.auth().signInWithPopup(
             new firebase.auth.GoogleAuthProvider()
-        ) 
-        if (resp.user?.email) {
-            const usuario = await usuarioNormalizado(resp.user)
-            setUsuario(usuario)
+            ) 
+            
+            ConfigurarSessao(resp.user)
             router.push('/')
+          
+        }finally{
+            setCarregando(false)
         }
     }
+
+    async function logout(){
+        try{
+            setCarregando(true)
+            await firebase.auth().signOut()
+            await ConfigurarSessao(null)
+        }finally{
+            setCarregando(false)
+        }
+    }
+
+    useEffect( () => {
+        const cancelar = firebase.auth().onIdTokenChanged(ConfigurarSessao)
+        return () => cancelar()
+    }, []
+    )
 
 
     return(
