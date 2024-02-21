@@ -2,14 +2,16 @@
 import { createContext, useEffect, useState } from 'react'
 import firebase from '../../firebase/config.js'
 import Usuario from '@/src/model/Usuario' 
-import { useRouter } from 'next/router'
+import router from 'next/router'
 import Cookies from 'js-cookie'
 
 
 
 interface AuthContextProps{
-    usuario?: Usuario
+    usuario?: Usuario | null
+    carregando?: boolean
     loginGoogle?: () => Promise<void>
+    logout?: () => Promise<void>
     children?: any //para resolver aviso
 }
 
@@ -18,17 +20,19 @@ const AuthContext = createContext<AuthContextProps>({})
 
 
 async function usuarioNormalizado(usuarioFirebase: any): Promise<Usuario>{
-    const token =  await usuarioFirebase.getIdToken()
-    return {
-        uid: usuarioFirebase.uid,
-        nome: usuarioFirebase.displayName,
-        email: usuarioFirebase.email,
-        token,
-        provedor: usuarioFirebase.providerData[0]?.providerId,
-        imagemUrl: usuarioFirebase.photoURL
+        const token =  await usuarioFirebase.getIdToken()
 
+        return {
+            uid: usuarioFirebase.uid,
+            nome: usuarioFirebase.displayName,
+            email: usuarioFirebase.email,
+            token,
+            provedor: usuarioFirebase.providerData[0]?.providerId,
+            imagemUrl: usuarioFirebase.photoURL
+            
+        }
     }
-}
+
 
     function gerenciarCookie(logado: boolean){
         if(logado){
@@ -36,18 +40,17 @@ async function usuarioNormalizado(usuarioFirebase: any): Promise<Usuario>{
                 expires: 7
             } )
         }else{
-            Cookies.delete('templete-admin-cod3r-auth')
+            Cookies.remove('templete-admin-cod3r-auth')
         }
     } 
 
 
 export function AuthProvider(props: AuthContextProps){
-    const router = useRouter()
-    const [usuario, setUsuario] = useState<Usuario>({} as Usuario);
-    const [carregando, setCarregando] = useState<Boolean>(true);
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
+    const [carregando, setCarregando] = useState<boolean>(true);
     
-    async function ConfigurarSessao(usuarioFirebase: any){
-        if(usuarioFirebase?.email !== null){
+    async function ConfigurarSessao(usuarioFirebase: any | null){
+        if(usuarioFirebase?.email){
             const usuario = await usuarioNormalizado(usuarioFirebase)
             setUsuario(usuario)
             gerenciarCookie(true) //add o cookie
@@ -88,8 +91,12 @@ export function AuthProvider(props: AuthContextProps){
     }
 
     useEffect( () => {
-        const cancelar = firebase.auth().onIdTokenChanged(ConfigurarSessao)
-        return () => cancelar()
+        if(Cookies.get('templete-admin-cod3r-auth')){ 
+            const cancelar = firebase.auth().onIdTokenChanged(ConfigurarSessao)
+            return () => cancelar()
+        }else{
+            setCarregando(false)
+        }
     }, []
     )
 
@@ -97,7 +104,9 @@ export function AuthProvider(props: AuthContextProps){
     return(
         <AuthContext.Provider value={{
             usuario,
-            loginGoogle
+            carregando,
+            loginGoogle,
+            logout
 
         }}>
             {props.children}

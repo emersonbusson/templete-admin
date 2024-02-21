@@ -6,3 +6,12 @@ export default interface Usuario {
     provedor?: string | null;
     imagemUrl?: string | null;
 }
+
+const usuario: Usuario = {
+    uid: null,
+    email: null,
+    nome: null,
+    token: null,
+    provedor: null,
+    imagemUrl: null
+};
