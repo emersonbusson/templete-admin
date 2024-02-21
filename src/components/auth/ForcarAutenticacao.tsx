@@ -1,10 +1,10 @@
 import Image from "next/image"
-import loading from '../../public/images/loading.gif'
-import useAuth from "../data/hook/useAuth"
+import loading from '../../../public/images/loading.gif'
+import useAuth from "../../data/hook/useAuth"
 import router from 'next/router'
 import Script from "next/script"
 
-export default function ForcarAutenticacao(jsx){
+export default function ForcarAutenticacao(props){
     const {usuario, carregando } = useAuth()
     
     function renderizarConteudo(){
@@ -19,7 +19,7 @@ export default function ForcarAutenticacao(jsx){
                 <Script id="my-script" dangerouslySetInnerHTML={{ __html: scriptContent }}/>
                 {/*verifica(if) se o cookie não estiver presente ele vai direcionar para a /autenticacao */}
            
-                {jsx}
+                {props.children}
             </>
         )
     }
