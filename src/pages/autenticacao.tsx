@@ -3,30 +3,32 @@ import AuthInput from '../components/auth/AuthInput'
 import { IconeAtencao } from '../components/icons'
 import useAuth from '../data/hook/useAuth'
 
-
-
 export default function Autenticacao(){
     
-    const { usuario, loginGoogle } = useAuth()
+    const { criarUsuario, login, loginGoogle } = useAuth()
     
-    const [erro, setErro] = useState(null)
+    const [erro, setErro] = useState<null | string>(null)
     const [modo, setModo] = useState<'login' | 'cadastro'>('login')
     const [email, setEmail  ] = useState('') 
     const [senha, setSenha  ] = useState('') 
     
-    function exibirErro(msg: any, tempoEmSegundos = 5){
+    function exibirErro(msg: string, tempoEmSegundos = 30){
         setErro(msg)
         setTimeout(() => setErro(null), tempoEmSegundos * 1000)
 
     }
 
-    function submeter(){
-        if(modo === 'login'){
-            console.log('login')
-        }else{
-            console.log('cadastrar')
-         }
-    }
+    async function submeter(){
+        try{
+            if(modo === 'login' && login ){
+                   await login(email, senha)
+            }else if(criarUsuario){
+                   await criarUsuario(email, senha)
+            }
+        }catch(erro){
+            exibirErro(e?.message ?? 'Erro desconhecido')
+            }
+        }
 
 
     return(
@@ -84,4 +86,4 @@ export default function Autenticacao(){
         
         </div>
     )
-} 
+}

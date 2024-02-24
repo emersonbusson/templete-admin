@@ -7,9 +7,12 @@ import Cookies from 'js-cookie'
 
 
 
+
 interface AuthContextProps{
     usuario?: Usuario | null
     carregando?: boolean
+    login?: (email: string, senha: string) => Promise<void>
+    criarUsuario?: (email: string, senha: string) => Promise<void>
     loginGoogle?: () => Promise<void>
     logout?: () => Promise<void>
     children?: any //para resolver aviso
@@ -63,7 +66,34 @@ export function AuthProvider(props: AuthContextProps){
             return false
         }   
     }
-
+    
+    async function login(email: string, senha: string) {
+        try{
+            setCarregando(true)
+            
+            const resp = await firebase.auth().signInWithEmailAndPassword(email, senha)
+            console.log(typeof resp, resp)
+            await ConfigurarSessao(resp.user)
+            router.push('/')
+          
+        }finally{
+            setCarregando(false)
+        }
+    }
+    
+    async function criarUsuario(email: string, senha: string) {
+        try{
+            setCarregando(true)
+            
+            const resp = await firebase.auth().createUserWithEmailAndPassword(email, senha)
+            await ConfigurarSessao(resp.user)
+            router.push('/')
+          
+        }finally{
+            setCarregando(false)
+        }
+    }
+    
     async function loginGoogle() {
         try{
             setCarregando(true)
@@ -72,14 +102,16 @@ export function AuthProvider(props: AuthContextProps){
             new firebase.auth.GoogleAuthProvider()
             ) 
             
-            ConfigurarSessao(resp.user)
+            await ConfigurarSessao(resp.user)
             router.push('/')
           
         }finally{
             setCarregando(false)
         }
     }
-
+    
+    
+    
     async function logout(){
         try{
             setCarregando(true)
@@ -105,6 +137,8 @@ export function AuthProvider(props: AuthContextProps){
         <AuthContext.Provider value={{
             usuario,
             carregando,
+            login,
+            criarUsuario,
             loginGoogle,
             logout
 
