@@ -25,8 +25,8 @@ export default function Autenticacao(){
             }else if(criarUsuario){
                    await criarUsuario(email, senha)
             }
-        }catch(erro){
-            exibirErro(e?.message ?? 'Erro desconhecido')
+        }catch(er){
+            exibirErro(er?.message ?? 'Erro desconhecido')
             }
         }
 
