@@ -72,7 +72,6 @@ export function AuthProvider(props: AuthContextProps){
             setCarregando(true)
             
             const resp = await firebase.auth().signInWithEmailAndPassword(email, senha)
-            console.log(typeof resp, resp)
             await ConfigurarSessao(resp.user)
             router.push('/')
           
